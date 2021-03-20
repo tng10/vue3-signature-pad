@@ -153,8 +153,11 @@ export default /*#__PURE__*/defineComponent({
 
       canvas.width = canvas.offsetWidth * ratio;
       canvas.height = canvas.offsetHeight * ratio;
-      canvas.getContext("2d")?.scale(ratio, ratio);
-
+      const context: CanvasRenderingContext2D | null = canvas.getContext("2d")
+      if (context) {
+        context.scale(ratio, ratio);
+      }
+      
       state.signaturePad.clear();
       state.signatureData = TRANSPARENT_PNG;
       state.signaturePad.fromData(data);
