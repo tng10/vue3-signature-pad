@@ -1,4 +1,4 @@
-import { ImageTypesEnum } from "@/utils";
+import { ImageTypesEnum, SaveOutputsEnum } from "@/utils";
 import {
   default as OriginalSignaturePad,
   Options,
@@ -15,6 +15,7 @@ export interface SignaturePadComponentProps {
   width: number;
   height: number;
   saveType: ImageTypesEnum;
+  saveOutput: SaveOutputsEnum;
   customStyle: SignaturePadCustomStyle;
   options: SignaturePadOptions;
   images: any[];
@@ -33,16 +34,23 @@ export interface SignaturePadComponentState {
   signatureData: SignaturePadData;
 }
 
-export interface SignaturePadSavedSignature {
+export interface SignaturePadSavedSignatureDataURL {
   isEmpty: boolean;
   data: string | null;
+  output: string;
+}
+
+export interface SignaturePadSavedSignatureFile {
+  isEmpty: boolean;
+  file: File | null;
+  output: string;
 }
 
 export interface ISignaturePad {
   saveSignature(
     type?: ImageTypesEnum,
     encoderOptions?: number
-  ): SignaturePadSavedSignature;
+  ): SignaturePadSavedSignatureDataURL | SignaturePadSavedSignatureFile;
   undoSignature(): void;
   mergeImageAndSignature(customSignature: SignaturePadData): any;
   addImages(images: any[]): any;

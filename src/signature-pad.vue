@@ -18,14 +18,15 @@ import {
 import { default as OriginalSignaturePad, PointGroup } from "signature_pad";
 import mergeImages from "merge-images";
 
-import { TRANSPARENT_PNG, ImageTypesEnum, convert2NonReactive } from "@/utils";
+import { TRANSPARENT_PNG, ImageTypesEnum, SaveOutputsEnum, convert2NonReactive, dataURLtoFile } from "@/utils";
 import {
   SignaturePadComponentProps,
   SignaturePadComponentState,
   SignaturePadCustomStyle,
   SignaturePadData,
   SignaturePadOptions,
-  SignaturePadSavedSignature,
+  SignaturePadSavedSignatureDataURL,
+  SignaturePadSavedSignatureFile,
 } from "@/types";
 
 const DEFAULT_OPTIONS: SignaturePadOptions = {
@@ -44,8 +45,8 @@ const DEFAULT_OPTIONS: SignaturePadOptions = {
 export default /*#__PURE__*/defineComponent({
   name: "VueSignaturePad",
   props: {
-    value: {
-      type: String,
+    modelValue: {
+      type: [String, File] as PropType<string | File>,
       required: false,
     },
     width: {
@@ -70,6 +71,22 @@ export default /*#__PURE__*/defineComponent({
         if (!allowedValues.includes(value)) {
           console.warn(
             `The Image type is incorrect! Supported ones are ${allowedValues.join(
+              ", "
+            )}.`
+          );
+          return false;
+        }
+        return true;
+      },
+    },
+    saveOutput: {
+      type: String as PropType<SaveOutputsEnum>,
+      default: SaveOutputsEnum.DATA_URL,
+      validator: function (value: string) {
+        const allowedValues: string[] = Object.values(SaveOutputsEnum);
+        if (!allowedValues.includes(value)) {
+          console.warn(
+            `The save output is incorrect! Supported ones are ${allowedValues.join(
               ", "
             )}.`
           );
@@ -166,24 +183,42 @@ export default /*#__PURE__*/defineComponent({
     function saveSignature(
       type: ImageTypesEnum = props.saveType,
       encoderOptions?: number
-    ): SignaturePadSavedSignature {
-      const status = { isEmpty: false, data: null };
-
+    ): SignaturePadSavedSignatureDataURL | SignaturePadSavedSignatureFile {
       if (state.signaturePad.isEmpty()) {
-        return {
-          ...status,
-          isEmpty: true,
-        };
-      } else {
-        state.signatureData.src = state.signaturePad.toDataURL(
-          type,
-          encoderOptions
-        );
+        if (props.saveOutput === SaveOutputsEnum.FILE) {
+          return {
+            isEmpty: true,
+            file: null,
+            output: SaveOutputsEnum.FILE,
+          }
+        } else if(props.saveOutput === SaveOutputsEnum.DATA_URL) {
+          return {
+            isEmpty: true,
+            data: null,
+            output: SaveOutputsEnum.DATA_URL,
+          }
+        } else {
+          throw new Error(`This saveOutput ${props.saveOutput} is not supported`)
+        }
+      }
 
+      const dataURL = state.signaturePad.toDataURL(type, encoderOptions);
+      state.signatureData.src = dataURL;
+
+      if (props.saveOutput === SaveOutputsEnum.FILE) {
+         return {
+           isEmpty: false,
+           file: dataURLtoFile(dataURL, 'signature'),
+           output: SaveOutputsEnum.FILE,
+         }
+      } else if (props.saveOutput === SaveOutputsEnum.DATA_URL) {
         return {
-          ...status,
-          data: state.signatureData.src,
-        };
+          isEmpty: false,
+          data: dataURL,
+          output: SaveOutputsEnum.DATA_URL,
+        }
+      } else {
+        throw new Error(`This saveOutput ${props.saveOutput} is not supported`)
       }
     }
 
@@ -196,8 +231,14 @@ export default /*#__PURE__*/defineComponent({
     }
 
     function completedSignature() {
-      const { data } = saveSignature();
-      context.emit("input", data);
+      const savedSignature: SignaturePadSavedSignatureDataURL | SignaturePadSavedSignatureFile = saveSignature();
+      let inputData: string | File | null = null;
+      if (savedSignature.output === SaveOutputsEnum.FILE) {
+        inputData = (savedSignature as SignaturePadSavedSignatureFile).file
+      } else if (savedSignature.output === SaveOutputsEnum.DATA_URL) {
+        inputData = (savedSignature as SignaturePadSavedSignatureDataURL).data;
+      }
+      context.emit("input", inputData);
     }
 
     function mergeImageAndSignature(customSignature: SignaturePadData): any {
