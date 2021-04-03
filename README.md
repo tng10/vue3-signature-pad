@@ -2,7 +2,9 @@
 
 ## Installation
 
-TBD
+```bash
+npm i --save vue3-signature-pad
+```
 
 ## Usage
 
