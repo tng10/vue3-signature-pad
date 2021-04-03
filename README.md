@@ -1,5 +1,7 @@
 # Vue3 Signature Pad
 
+[![Node.js Package](https://github.com/tng10/vue3-signature-pad/actions/workflows/npm-publish.yml/badge.svg)](https://github.com/tng10/vue3-signature-pad/actions/workflows/npm-publish.yml)
+
 ## Installation
 
 ```bash
