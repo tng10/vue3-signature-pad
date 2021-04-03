@@ -15,6 +15,10 @@
     "name": "Júlio Lacerda",
     "url": "https://github.com/tng10"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tng10/vue3-signature-pad.git"
+  },
   "license": "MIT",
   "main": "dist/signature-pad.ssr.js",
   "browser": "dist/signature-pad.esm.js",
