@@ -1,6 +1,5 @@
 import { DefineComponent, Plugin } from 'vue';
-export * from '@/types';
-export * as Utils from '@/utils';
+export * from './src/types';
+export * from './src/utils';
 
-declare const SignaturePad: DefineComponent<{}, {}, any> & { install: Exclude<Plugin['install'], undefined> };
-export default SignaturePad;
+export declare const SignaturePad: DefineComponent<{}, {}, any> & { install: Exclude<Plugin['install'], undefined> };
